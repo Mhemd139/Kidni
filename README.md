@@ -2,6 +2,10 @@
 
 <div align="center">
 
+**Kidni - קידני • Empowering caregivers through interactive education**
+
+<img src="assets/logo/KidniLogo.jpg" alt="Kidni Logo" width="200"/>
+
 ### **Transforming Medical Complexity into Interactive Learning**
 
 *An evidence-based mobile application that gamifies dietary management for children with Chronic Kidney Disease*
@@ -798,12 +802,6 @@ Found a bug? Want to contribute?
 ### **Built with ❤️ for the fighters of the Dialysis Department**
 
 *Making medical complexity simple, one question at a time.*
-
----
-
-![Kidni Logo](assets/logo/KidniLogo.jpg)
-
-**Kidni - קידני** • Empowering caregivers through interactive education
 
 [⬆ Back to Top](#kidni---קידני)
 
