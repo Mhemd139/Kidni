@@ -1,0 +1,35 @@
+name: kidni
+description: Educational app for parents of children on dialysis - learn about nutrition choices.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.2
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/avatars/
+    - assets/images/
+    - assets/logo/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo/KidniLogo.jpg"
+  adaptive_icon_background: "#FFFDD0"
+  adaptive_icon_foreground: "assets/logo/KidniLogo.jpg"
