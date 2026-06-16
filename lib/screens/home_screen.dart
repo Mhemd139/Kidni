@@ -67,6 +67,87 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: KidniColors.cardBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.favorite_rounded,
+                  color: KidniColors.primary, size: 28),
+              const SizedBox(width: 12),
+              const Text('אודות קידני'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'קידני — לומדים לאכול נכון',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: KidniColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'אפליקציה חינוכית לילדים עם מחלת כליות כרונית ולהוריהם. ללמוד ביחד על בחירות מזון נכונות, טכניקות בישול ותוויות מזון.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: KidniColors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: KidniColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: KidniColors.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        color: KidniColors.primary, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'המידע במשחק הוא לצורך למידה בלבד. תמיד התייעצו עם הרופא והדיאטנית של הילד.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: KidniColors.textPrimary,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('סגור'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Reset progress for testing
   Future<void> _resetProgress() async {
     final confirmed = await showDialog<bool>(
@@ -145,24 +226,50 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.refresh_rounded,
-              color: KidniColors.textSecondary,
-            ),
-            tooltip: 'איפוס התקדמות',
-            onPressed: _resetProgress,
-          ),
           actions: [
-            // Placeholder for future settings/info button
-            IconButton(
+            PopupMenuButton<String>(
               icon: Icon(
-                Icons.info_outline_rounded,
+                Icons.more_vert_rounded,
                 color: KidniColors.textSecondary,
               ),
-              onPressed: () {
-                // TODO: Add info/about screen
+              tooltip: 'תפריט',
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onSelected: (value) {
+                switch (value) {
+                  case 'about':
+                    _showAboutDialog();
+                    break;
+                  case 'reset':
+                    _resetProgress();
+                    break;
+                }
               },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'about',
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          color: KidniColors.primary, size: 20),
+                      const SizedBox(width: 12),
+                      const Text('אודות'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'reset',
+                  child: Row(
+                    children: [
+                      Icon(Icons.refresh_rounded,
+                          color: KidniColors.errorDark, size: 20),
+                      const SizedBox(width: 12),
+                      const Text('איפוס התקדמות'),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -391,6 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => _navigateToLevel(level),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

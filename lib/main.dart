@@ -26,7 +26,7 @@ class KidniColors {
   // Text colors
   static const Color textPrimary = Color(0xFF2D3436);
   static const Color textSecondary = Color(0xFF636E72);
-  static const Color textLight = Color(0xFF95A5A6);
+  static const Color textLight = Color(0xFF6C7880); // 4.7:1 on cream — meets WCAG AA
 
   // Level colors (kept for variety)
   static const Color level1 = Color(0xFF4CAF50); // Green

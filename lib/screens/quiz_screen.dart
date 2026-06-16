@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/models.dart';
 import '../data/questions_data.dart';
 import '../main.dart';
 import 'triumph_dialog.dart';
+import 'review_screen.dart';
 
 class QuizScreen extends StatefulWidget {
   final int level;
@@ -20,11 +22,57 @@ class _QuizScreenState extends State<QuizScreen> {
   int _questionIndex = 0;
   List<Question> _questions = [];
   bool _isLoading = true;
+  int _sessionScore = 0;
+  int _currentStreak = 0;
 
   // Answer state
   String? _selectedOptionId;
   bool? _isCorrectAnswer;
   bool _hasAnswered = false;
+
+  Future<bool> _confirmExit() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: KidniColors.cardBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.exit_to_app_rounded,
+                  color: KidniColors.primary, size: 26),
+              const SizedBox(width: 12),
+              const Text('לצאת מהמשחק?'),
+            ],
+          ),
+          content: const Text(
+            'ההתקדמות בשלב זה לא תישמר.',
+            style: TextStyle(fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'להמשיך לשחק',
+                style: TextStyle(color: _getLevelColor(widget.level)),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: KidniColors.errorDark,
+              ),
+              child: const Text('צא'),
+            ),
+          ],
+        ),
+      ),
+    );
+    return result ?? false;
+  }
 
   @override
   void initState() {
@@ -50,21 +98,36 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  void _onOptionSelected(Option option) {
+  Future<void> _onOptionSelected(Option option) async {
     if (_hasAnswered) return;
 
     setState(() {
       _selectedOptionId = option.id;
       _isCorrectAnswer = option.isCorrect;
       _hasAnswered = true;
+      if (option.isCorrect) {
+        _sessionScore++;
+        _currentStreak++;
+      } else {
+        _currentStreak = 0;
+      }
     });
 
-    // Save result
-    _levelManager.saveQuestionResult(
+    // Haptic feedback — tactile reward for kids
+    if (option.isCorrect) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.mediumImpact();
+    }
+
+    // Save result and wait for it to persist
+    await _levelManager.saveQuestionResult(
       level: widget.level,
       questionId: _currentQuestion!.id,
       isCorrect: option.isCorrect,
     );
+
+    if (!mounted) return;
 
     // Show explanation bottom sheet
     _showExplanationSheet(option.isCorrect);
@@ -75,6 +138,7 @@ class _QuizScreenState extends State<QuizScreen> {
       context: context,
       isDismissible: false,
       enableDrag: false,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _ExplanationSheet(
         isCorrect: isCorrect,
@@ -97,29 +161,22 @@ class _QuizScreenState extends State<QuizScreen> {
         _hasAnswered = false;
       });
     } else {
-      _showLevelCompleteDialog();
+      _finishAndShowComplete();
     }
   }
 
-  void _showLevelCompleteDialog() async {
-    // Finish the session and update high score
-    await _levelManager.finishLevelSession(widget.level);
+  Future<void> _finishAndShowComplete() async {
+    final result = await _levelManager.finishLevelSession(widget.level);
+    if (!mounted) return;
 
-    // Get SESSION score (what they just got)
-    int sessionScore = _levelManager.getSessionScore(widget.level);
-    int highScore = _levelManager.getLevelScore(widget.level);
-
-    bool unlocked = widget.level < 5 && highScore >= pointsToUnlock;
-
-    // Show triumph animation if this session passed and unlocked next level
-    if (sessionScore >= pointsToUnlock && widget.level < 5) {
-      _showTriumphDialog(sessionScore, highScore);
+    if (result.newLevelUnlocked) {
+      _showTriumphDialog(result);
     } else {
-      _showStandardCompleteDialog(sessionScore, highScore);
+      _showStandardCompleteDialog(result);
     }
   }
 
-  void _showTriumphDialog(int sessionScore, int highScore) {
+  void _showTriumphDialog(LevelSessionResult result) {
     int nextLevel = widget.level + 1;
 
     showDialog(
@@ -127,7 +184,7 @@ class _QuizScreenState extends State<QuizScreen> {
       barrierDismissible: false,
       builder: (context) => TriumphDialog(
         currentLevel: widget.level,
-        score: sessionScore,
+        score: result.sessionScore,
         totalQuestions: _questions.length,
         nextLevel: nextLevel,
         nextLevelColor: _getLevelColor(nextLevel),
@@ -139,13 +196,17 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  void _showStandardCompleteDialog(int sessionScore, int highScore) {
+  void _showStandardCompleteDialog(LevelSessionResult result) {
+    bool passed = result.sessionScore >= pointsToUnlock;
+    bool isLastLevel = widget.level >= 5;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Directionality(
+      builder: (dialogContext) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
+          scrollable: true,
           backgroundColor: KidniColors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -155,28 +216,39 @@ class _QuizScreenState extends State<QuizScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: KidniColors.primary.withOpacity(0.3),
+                  color: (passed ? KidniColors.success : KidniColors.primary)
+                      .withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.star,
-                  color: Colors.amber.shade700,
+                  passed ? Icons.emoji_events : Icons.star,
+                  color: passed
+                      ? KidniColors.successDark
+                      : Colors.amber.shade700,
                   size: 28,
                 ),
               ),
               const SizedBox(width: 12),
-              const Text('סיימת את השלב!'),
+              Expanded(
+                child: Text(
+                  passed && isLastLevel
+                      ? 'כל הכבוד! סיימת הכל!'
+                      : 'סיימת את השלב!',
+                ),
+              ),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'ענית נכון על $sessionScore מתוך ${_questions.length} שאלות',
+                'ענית נכון על ${result.sessionScore} מתוך ${_questions.length} שאלות',
                 style: const TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 8),
-              if (sessionScore > highScore)
+
+              // New high score banner (uses OLD high score from before update)
+              if (result.isNewHighScore)
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -199,57 +271,133 @@ class _QuizScreenState extends State<QuizScreen> {
                     ],
                   ),
                 )
-              else if (highScore > sessionScore)
+              else if (result.oldHighScore > result.sessionScore)
                 Text(
-                  'השיא שלך: $highScore/${_questions.length}',
+                  'השיא שלך: ${result.oldHighScore}/${_questions.length}',
                   style: TextStyle(
                     fontSize: 14,
                     color: KidniColors.textSecondary,
                   ),
                 ),
+
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: KidniColors.primary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: KidniColors.primary.withOpacity(0.4),
+
+              // Info box: context-aware message
+              if (passed && isLastLevel)
+                // Level 5 passed — all levels done
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: KidniColors.success.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: KidniColors.successDark.withOpacity(0.4),
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: KidniColors.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'צריך $pointsToUnlock תשובות נכונות כדי לפתוח את השלב הבא',
-                        style: TextStyle(
-                          color: KidniColors.textPrimary,
-                          fontSize: 14,
+                  child: Row(
+                    children: [
+                      Icon(Icons.celebration,
+                          color: KidniColors.successDark),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'השלמת את כל השלבים! אתה מומחה לתזונה נכונה לכליות',
+                          style: TextStyle(
+                            color: KidniColors.textPrimary,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                )
+              else if (!passed)
+                // Didn't pass — show requirement
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: KidniColors.primary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: KidniColors.primary.withOpacity(0.4),
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: KidniColors.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'צריך $pointsToUnlock תשובות נכונות כדי לפתוח את השלב הבא. נסו שוב!',
+                          style: TextStyle(
+                            color: KidniColors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
           actions: [
+            // Review questions button
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ReviewScreen(
+                      level: widget.level,
+                      levelColor: _getLevelColor(widget.level),
+                    ),
+                  ),
+                );
+              },
+              icon: Icon(Icons.menu_book_rounded,
+                  size: 18, color: _getLevelColor(widget.level)),
+              label: Text(
+                'סקור',
+                style: TextStyle(color: _getLevelColor(widget.level)),
+              ),
+            ),
+            // Retry button — copy differs by pass/fail
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _retryLevel();
+              },
+              child: Text(
+                passed ? 'שחק שוב' : 'נסה שוב',
+                style: TextStyle(color: _getLevelColor(widget.level)),
+              ),
+            ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 Navigator.pop(context);
               },
               style: FilledButton.styleFrom(
                 backgroundColor: KidniColors.primary,
               ),
-              child: const Text('חזרה לתפריט'),
+              child: const Text('תפריט'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _retryLevel() {
+    setState(() {
+      _isLoading = true;
+      _sessionScore = 0;
+      _currentStreak = 0;
+      _selectedOptionId = null;
+      _isCorrectAnswer = null;
+      _hasAnswered = false;
+    });
+    _initLevel();
   }
 
   @override
@@ -284,36 +432,54 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: KidniColors.background,
-        appBar: AppBar(
-          title: Text(levelTitles[widget.level] ?? 'שלב ${widget.level}'),
-          centerTitle: true,
-          backgroundColor: _getLevelColor(widget.level),
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildProgressBar(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      _buildAvatarSection(),
-                      const SizedBox(height: 20),
-                      _buildQuestionCard(),
-                      const SizedBox(height: 24),
-                      _buildOptionsSection(),
-                    ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldExit = await _confirmExit();
+        if (shouldExit && mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: KidniColors.background,
+          appBar: AppBar(
+            title: Text(levelTitles[widget.level] ?? 'שלב ${widget.level}'),
+            centerTitle: true,
+            backgroundColor: _getLevelColor(widget.level),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_forward_rounded),
+              tooltip: 'חזרה',
+              onPressed: () async {
+                final shouldExit = await _confirmExit();
+                if (shouldExit && mounted) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildProgressBar(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        _buildQuestionCard(),
+                        const SizedBox(height: 24),
+                        _buildOptionsSection(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -333,20 +499,74 @@ class _QuizScreenState extends State<QuizScreen> {
                 'שאלה ${_questionIndex + 1} מתוך ${_questions.length}',
                 style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${_levelManager.getLevelScore(widget.level)} נקודות',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  // Streak chip (appears at 3+)
+                  if (_currentStreak >= 3) ...[
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade600,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.local_fire_department_rounded,
+                              color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            'רצף $_currentStreak',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  // Score chip with animation on change
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(
+                          scale: animation,
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        '$_sessionScore נקודות',
+                        key: ValueKey(_sessionScore),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -365,75 +585,10 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  Widget _buildAvatarSection() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          // Dynamic avatar image with breathing room
-          Container(
-            width: 100,
-            height: 100,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: KidniColors.cardBackground,
-              border: Border.all(
-                color: _getLevelColor(widget.level),
-                width: 4,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: _getLevelColor(widget.level).withOpacity(0.3),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                _levelManager.getAvatarAsset(widget.level),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback to icon if avatar image is missing
-                  return Container(
-                    color: _getLevelColor(widget.level).withOpacity(0.2),
-                    child: Icon(
-                      _getAvatarIcon(widget.level),
-                      size: 45,
-                      color: _getLevelColor(widget.level),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: _getLevelColor(widget.level).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              _getAvatarTitle(widget.level),
-              style: TextStyle(
-                fontSize: 14,
-                color: _getLevelColor(widget.level),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildQuestionCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: KidniColors.cardBackground,
         borderRadius: BorderRadius.circular(24),
@@ -448,6 +603,7 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
       child: Column(
         children: [
+          // Topic chip
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
@@ -463,12 +619,49 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          // Question image — responsive: caps at 30% of screen height
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final screenHeight = MediaQuery.of(context).size.height;
+              final maxImageSide = screenHeight * 0.3;
+              final imageSide = constraints.maxWidth < maxImageSide
+                  ? constraints.maxWidth
+                  : maxImageSide;
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: SizedBox(
+                  width: imageSide,
+                  height: imageSide,
+                  child: Image.asset(
+                    _currentQuestion!.image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade100,
+                        child: Center(
+                          child: Icon(
+                            Icons.restaurant_rounded,
+                            color: Colors.grey.shade400,
+                            size: 64,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 18),
+
+          // Question text
           Text(
             _currentQuestion!.questionText,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               height: 1.4,
               color: KidniColors.textPrimary,
@@ -514,39 +707,6 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  IconData _getAvatarIcon(int level) {
-    switch (level) {
-      case 1:
-        return Icons.child_care;
-      case 2:
-        return Icons.school;
-      case 3:
-        return Icons.psychology;
-      case 4:
-        return Icons.science;
-      case 5:
-        return Icons.medical_services;
-      default:
-        return Icons.child_care;
-    }
-  }
-
-  String _getAvatarTitle(int level) {
-    switch (level) {
-      case 1:
-        return 'מתחיל';
-      case 2:
-        return 'לומד';
-      case 3:
-        return 'מתקדם';
-      case 4:
-        return 'מומחה';
-      case 5:
-        return 'דוקטור';
-      default:
-        return 'מתחיל';
-    }
-  }
 }
 
 // ============================================
@@ -598,15 +758,16 @@ class _AnimatedOptionCardState extends State<_AnimatedOptionCard>
   }
 
   void _handleTapDown(TapDownDetails details) {
-    if (!widget.hasAnswered) {
-      _controller.forward();
-    }
+    if (widget.hasAnswered) return;
+    _controller.forward();
   }
 
-  void _handleTapUp(TapUpDetails details) {
-    if (!widget.hasAnswered) {
-      _controller.reverse().then((_) => widget.onTap());
-    }
+  void _handleTap() {
+    if (widget.hasAnswered) return;
+    // Fire action IMMEDIATELY — don't wait for animation
+    widget.onTap();
+    // Reverse animation plays async; doesn't block the tap
+    _controller.reverse();
   }
 
   void _handleTapCancel() {
@@ -667,8 +828,9 @@ class _AnimatedOptionCardState extends State<_AnimatedOptionCard>
     }
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
+      onTap: _handleTap,
       onTapCancel: _handleTapCancel,
       child: AnimatedBuilder(
         animation: _scaleAnimation,
@@ -691,85 +853,28 @@ class _AnimatedOptionCardState extends State<_AnimatedOptionCard>
           ),
           child: Row(
             children: [
-              // Option image
-              if (widget.option.image != null)
-                Container(
-                  width: 75,
-                  height: 75,
-                  margin: const EdgeInsets.only(left: 14),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: widget.hasAnswered
-                          ? borderColor.withOpacity(0.5)
-                          : widget.levelColor.withOpacity(0.3),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      widget.option.image!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Friendly placeholder for missing food images
-                        return Container(
-                          color: Colors.grey.shade100,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.restaurant_rounded,
-                                  color: Colors.grey.shade400,
-                                  size: 32,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '?',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade400,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                )
-              else
-                // Fallback: Option letter badge when no image
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: widget.hasAnswered
-                        ? borderColor.withOpacity(0.2)
-                        : widget.levelColor.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.option.id,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color:
-                            widget.hasAnswered ? textColor : widget.levelColor,
-                      ),
+              // Option letter badge
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: widget.hasAnswered
+                      ? borderColor.withOpacity(0.2)
+                      : widget.levelColor.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    widget.option.id,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          widget.hasAnswered ? textColor : widget.levelColor,
                     ),
                   ),
                 ),
+              ),
 
               const SizedBox(width: 14),
 
@@ -834,7 +939,7 @@ class _ExplanationSheet extends StatelessWidget {
           ],
         ),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -118,9 +118,10 @@ class _TriumphDialogState extends State<TriumphDialog>
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               // Celebration icon
               Container(
                 padding: const EdgeInsets.all(18),
@@ -299,6 +300,7 @@ class _TriumphDialogState extends State<TriumphDialog>
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),

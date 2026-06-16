@@ -9,13 +9,11 @@ class Option {
   final String id;
   final String text;
   final bool isCorrect;
-  final String? image; // Optional image asset path
 
   Option({
     required this.id,
     required this.text,
     required this.isCorrect,
-    this.image,
   });
 
   factory Option.fromJson(Map<String, dynamic> json) {
@@ -23,7 +21,6 @@ class Option {
       id: json['id'] as String,
       text: json['text'] as String,
       isCorrect: json['is_correct'] as bool,
-      image: json['image'] as String?,
     );
   }
 }
@@ -33,18 +30,18 @@ class Question {
   final int level;
   final String topic;
   final String questionText;
+  final String image;
   final List<Option> options;
   final String explanation;
-  final String? imageSuggestion;
 
   Question({
     required this.id,
     required this.level,
     required this.topic,
     required this.questionText,
+    required this.image,
     required this.options,
     required this.explanation,
-    this.imageSuggestion,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
@@ -53,15 +50,33 @@ class Question {
       level: json['level'] as int,
       topic: json['topic'] as String,
       questionText: json['question_text'] as String,
+      image: json['image'] as String,
       options: (json['options'] as List)
           .map((o) => Option.fromJson(o as Map<String, dynamic>))
           .toList(),
       explanation: json['explanation'] as String,
-      imageSuggestion: json['image_suggestion'] as String?,
     );
   }
 
   Option get correctOption => options.firstWhere((o) => o.isCorrect);
+}
+
+// ============================================
+// Level Session Result
+// ============================================
+
+class LevelSessionResult {
+  final int sessionScore;
+  final int oldHighScore;
+  final bool isNewHighScore;
+  final bool newLevelUnlocked;
+
+  LevelSessionResult({
+    required this.sessionScore,
+    required this.oldHighScore,
+    required this.isNewHighScore,
+    required this.newLevelUnlocked,
+  });
 }
 
 // ============================================
@@ -162,24 +177,35 @@ class LevelManager {
   }
 
   // Finish the level session and update high score
-  Future<void> finishLevelSession(int level) async {
+  // Returns result with old/new scores and whether a new level was unlocked
+  Future<LevelSessionResult> finishLevelSession(int level) async {
     if (_prefs == null) await init();
 
     int sessionScore = getSessionScore(level);
-    int highScore = getLevelScore(level);
+    int oldHighScore = getLevelScore(level);
+    bool isNewHighScore = sessionScore > oldHighScore;
+    bool newLevelUnlocked = false;
 
-    // HIGH SCORE LOGIC: Only update if session score is better
-    if (sessionScore > highScore) {
+    if (isNewHighScore) {
       await _prefs?.setInt('$_levelHighScorePrefix$level', sessionScore);
+    }
 
-      // Check if next level should unlock
-      if (sessionScore >= pointsToUnlock && level < 5) {
+    // Check if next level should unlock (even if not a new high score,
+    // the level might not have been unlocked yet)
+    if (sessionScore >= pointsToUnlock && level < 5) {
+      int nextLevel = level + 1;
+      if (nextLevel > getUnlockedLevel()) {
+        newLevelUnlocked = true;
         await _unlockNextLevel(level);
       }
     }
 
-    // Note: We DON'T clear session data here - it stays until next startLevelSession
-    // This allows the level complete dialog to show the session score
+    return LevelSessionResult(
+      sessionScore: sessionScore,
+      oldHighScore: oldHighScore,
+      isNewHighScore: isNewHighScore,
+      newLevelUnlocked: newLevelUnlocked,
+    );
   }
 
   // Unlock the next level (private helper)
@@ -217,11 +243,9 @@ class LevelManager {
     return null; // All questions answered in this session
   }
 
-  // Check if level session is complete (all questions answered)
+  // Check if level has been passed (high score meets unlock threshold)
   bool isLevelComplete(int level) {
-    List<int> completed = getCompletedQuestions(level);
-    List<Question> levelQuestions = getQuestionsForLevel(level);
-    return completed.length >= levelQuestions.length;
+    return getLevelScore(level) >= pointsToUnlock;
   }
 
   // Get progress for a level based on HIGH SCORE (0.0 to 1.0)
