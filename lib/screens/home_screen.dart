@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/models.dart';
 import '../data/questions_data.dart';
 import '../main.dart';
@@ -226,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
           actions: [
             PopupMenuButton<String>(
               icon: Icon(
@@ -274,21 +276,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  // Header
+                  _buildHeader(),
 
-              // Avatar display
-              _buildAvatarSection(),
+                  // Avatar display
+                  _buildAvatarSection(),
 
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              // Levels list
-              Expanded(
-                child: _buildLevelsList(),
+                  // Levels list
+                  Expanded(
+                    child: _buildLevelsList(),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

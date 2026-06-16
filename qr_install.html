@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kidni — Install QR</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
+          integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU"
+          crossorigin="anonymous"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #FFFDD0; color: #2D3436;
+           display: flex; flex-direction: column; align-items: center; padding: 40px; }
+    h1 { color: #FF7F50; }
+    #qr { background: #fff; padding: 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    #qr img { display: block; }
+    code { background: #fff; padding: 6px 10px; border-radius: 8px; word-break: break-all; }
+    p { max-width: 480px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>קידני — סריקה להתקנה</h1>
+  <p>Scan with an Android phone camera to download and install the app.</p>
+  <div id="qr"></div>
+  <p>Link: <code id="url"></code></p>
+
+  <script>
+    // The public APK download link from GitHub Releases.
+    const APK_URL = "https://github.com/Mhemd139/Kidni/releases/download/v1.0.1/app-release.apk";
+    document.getElementById("url").textContent = APK_URL;
+    new QRCode(document.getElementById("qr"), { text: APK_URL, width: 320, height: 320 });
+  </script>
+</body>
+</html>

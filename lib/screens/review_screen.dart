@@ -29,12 +29,17 @@ class ReviewScreen extends StatelessWidget {
           elevation: 0,
         ),
         body: SafeArea(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: questions.length,
-            itemBuilder: (context, index) {
-              return _buildQuestionReview(questions[index], index + 1);
-            },
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: questions.length,
+                itemBuilder: (context, index) {
+                  return _buildQuestionReview(questions[index], index + 1);
+                },
+              ),
+            ),
           ),
         ),
       ),

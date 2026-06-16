@@ -463,22 +463,27 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
           body: SafeArea(
-            child: Column(
-              children: [
-                _buildProgressBar(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _buildQuestionCard(),
-                        const SizedBox(height: 24),
-                        _buildOptionsSection(),
-                      ],
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  children: [
+                    _buildProgressBar(),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            _buildQuestionCard(),
+                            const SizedBox(height: 24),
+                            _buildOptionsSection(),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

@@ -43,3 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local scratch — image working folders, not for the repo
+backup_images/
+temp_images/
+assets/images_pot/
+
+# Local working notes / prompts — not for the repo
+claude_design_prompt.md
+nano_banana_prompts.md
+new_info.md
+pptx_fill_prompt.md
+presentation_structure.md
+questions_final.md
+recruiting_techniques.md

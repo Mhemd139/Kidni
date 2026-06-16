@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'models/models.dart';
@@ -39,6 +40,12 @@ class KidniColors {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Portrait-only — the layout is designed vertically; avoids stretched landscape on tablets
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   // Initialize LevelManager before app starts
   await LevelManager().init();
 
@@ -75,6 +82,9 @@ class KidniApp extends StatelessWidget {
         appBarTheme: AppBarTheme(
           centerTitle: true,
           elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
           backgroundColor: KidniColors.primary,
           foregroundColor: Colors.white,
           titleTextStyle: GoogleFonts.varelaRound(
