@@ -12,7 +12,7 @@
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.0.1-blue?style=for-the-badge)
 ![Privacy](https://img.shields.io/badge/privacy-first-green?style=for-the-badge)
 ![Offline](https://img.shields.io/badge/offline-ready-orange?style=for-the-badge)
 
@@ -55,37 +55,38 @@ This ensures that stressed parents can access **life-saving nutritional informat
 
 ### 🎮 Gamified Education Logic
 
-Users progress through **5 distinct levels of expertise**, evolving from "Concerned Parent" (לומד) to "Expert Doctor" (מומחה):
+Users progress through **5 distinct levels of expertise**, evolving from "Beginner" (מתחיל) to "Doctor" (דוקטור):
 
-| Level | Title | Focus Area | Questions |
-|-------|-------|-----------|-----------|
-| **1** | לומד (Beginner) | Breakfast & Basics | 4 |
-| **2** | מתקדם (Intermediate) | Snacks & Beverages | 4 |
-| **3** | בקיא (Proficient) | Processed Foods & Additives | 4 |
-| **4** | מנוסה (Experienced) | Main Meals & Preparation | 4 |
-| **5** | מומחה (Expert) | Advanced Nutritional Strategies | 4 |
+| Level | Rank | Focus Area | Questions |
+|-------|------|-----------|-----------|
+| **1** | מתחיל (Beginner) | Breakfast & Basics (ארוחת בוקר ובסיס) | 8 |
+| **2** | לומד (Learner) | Cooking Techniques (טכניקות בישול) | 8 |
+| **3** | מתקדם (Advanced) | Snacks & Drinks (חטיפים ושתייה) | 8 |
+| **4** | מומחה (Expert) | Processed Foods (מזון מעובד) | 8 |
+| **5** | דוקטור (Doctor) | Labels & Additives (תוויות ותוספים) | 8 |
 
 **Achievement System**:
 - Unlock new avatars as you master each level
 - Track personal bests with a sophisticated **session-based high score system**
 - Replay levels to reinforce learning without penalty
 
-### 🖼️ Visual-First Quiz Engine
+### 🖼️ Visual Quiz Engine
 
-**"Split-Choice" Interface**: A proprietary design pattern that presents food comparisons through high-quality imagery rather than text-heavy descriptions.
+**Image-Led Questions**: Each question pairs a high-quality illustrative image with a simple two-choice (A/B) decision, so users learn to recognize real-world food scenarios rather than parse text-heavy lists. The image anchors the *question*; the two answers are text options.
 
 **Example Scenario**:
 ```
+Image:    [🍞 Bread for a school sandwich]
 Question: "Which bread is better for a school sandwich?"
-Option A: [Image: Whole Wheat Bread] ❌
-Option B: [Image: White Bread] ✅
+Option A: לחם מלא או שיפון (whole wheat / rye)   ❌
+Option B: לחם לבן או פיתה (white bread / pita)   ✅
 Explanation: "White bread contains significantly less phosphorus than whole wheat..."
 ```
 
 **Learning Methodology**:
-1. **Visual Recognition** - Trains users to identify foods by appearance (crucial for grocery shopping)
+1. **Visual Recognition** - Each scenario is anchored by an image (crucial for grocery shopping)
 2. **Immediate Feedback** - Green/Red color coding with detailed medical explanations
-3. **Spaced Repetition** - Can replay levels to reinforce knowledge retention
+3. **Replay Without Penalty** - Replay levels to reinforce knowledge retention
 4. **Progressive Complexity** - Later levels build on earlier concepts
 
 ### 🔒 Zero-Friction User Experience
@@ -126,7 +127,7 @@ Explanation: "White bread contains significantly less phosphorus than whole whea
 | **Framework** | Flutter 3.0+ | Cross-platform (iOS/Android) with native performance |
 | **Language** | Dart (>=3.0.0) | Type-safe, null-safe, excellent async support |
 | **State Management** | Ephemeral State (setState) + Singleton Services | Appropriate complexity for app scope, no over-engineering |
-| **Persistence** | shared_preferences ^2.2.2 | Local key-value storage for privacy and offline functionality |
+| **Persistence** | shared_preferences ^2.5.5 | Local key-value storage for privacy and offline functionality |
 | **Typography** | google_fonts ^6.1.0 (Varela Round) | Optimized for Hebrew readability with friendly aesthetic |
 | **Design System** | Custom Material 3 Theme | "Calming Healthcare" palette (Soft Coral, Mint, Cream) |
 | **Assets** | Claymorphism 3D Avatars + High-Fidelity Food Photography | Professional visual quality that builds trust |
@@ -159,7 +160,7 @@ User answers questions → saveQuestionResult() tracks performance
     ↓
 User completes level → finishLevelSession() compares to high score
     ↓
-If score ≥ 3/4 → Unlock next level + trigger TriumphDialog animation
+If score ≥ 6/8 → Unlock next level + trigger TriumphDialog animation
 ```
 
 See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for implementation details.
@@ -219,7 +220,7 @@ See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for implementation details.
 ┌─────────────────────┐
 │ HomeScreen          │
 │ ┌─────────────────┐ │
-│ │ Level 1: ████░░ │ │ → Shows progress (3/4 correct)
+│ │ Level 1: ████░░ │ │ → Shows progress (6/8 correct)
 │ │ Level 2: 🔒     │ │ → Locked until Level 1 passes
 │ │ ...             │ │
 │ └─────────────────┘ │
@@ -228,8 +229,9 @@ See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for implementation details.
 ┌────────────────────────────┐
 │ QuizScreen                 │
 │ ┌────────────────────────┐ │
+│ │ [🍞 scenario image]    │ │ → One image per question
 │ │ Q1: Which bread is...? │ │
-│ │ [🍞 White] [🌾 Wheat]  │ │ → Visual food options
+│ │ (A) White   (B) Wheat  │ │ → Text answer options
 │ └────────────────────────┘ │
 └──────┬─────────────────────┘
        ↓ (User selects answer)
@@ -242,14 +244,14 @@ See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for implementation details.
 │ │ [Next Question]        │ │
 │ └────────────────────────┘ │
 └──────┬─────────────────────┘
-       ↓ (After 4 questions)
+       ↓ (After 8 questions)
 ┌────────────────────────────┐
-│ TriumphDialog (if score≥3) │
+│ TriumphDialog (if score≥6) │
 │ ┌────────────────────────┐ │
 │ │ 🎊 Level Complete!     │ │
 │ │ [Animated Avatar]      │ │ → Elastic scale + rotation
-│ │ You scored 3/4!        │ │
-│ │ Unlocked: מתקדם        │ │
+│ │ You scored 6/8!        │ │
+│ │ Unlocked: לומד         │ │
 │ │ [Continue →]           │ │
 │ └────────────────────────┘ │
 └────────────────────────────┘
@@ -266,16 +268,15 @@ See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for implementation details.
 6. "Next Question" button advances quiz
 
 **Level Completion**:
-1. After final question, `finishLevelSession()` is called
+1. After the final question, `finishLevelSession()` is called
 2. System compares session score vs. previous high score
-3. If new high score AND score ≥ 3/4:
+3. If session score ≥ 6/8 and this opens a level not yet unlocked:
    - Show **TriumphDialog** with 800ms elastic animation
-   - Unlock next level automatically
+   - Unlock the next level automatically
    - Update home screen progress
-4. If failed (score < 3):
-   - Show standard completion dialog
-   - Encourage retry with motivational message
-   - Previous high score preserved
+4. Otherwise (score < 6, or the level was already unlocked):
+   - Show the standard completion dialog (Review / Retry / Menu)
+   - High score updates only if this attempt beat the previous best
 
 ---
 
@@ -295,8 +296,8 @@ See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for implementation details.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/kidni.git
-cd kidni
+git clone https://github.com/Mhemd139/Kidni.git
+cd Kidni
 
 # 2. Install dependencies
 flutter pub get
@@ -305,7 +306,7 @@ flutter pub get
 flutter doctor
 
 # 4. Generate app icons (optional)
-flutter pub run flutter_launcher_icons
+dart run flutter_launcher_icons
 ```
 
 ### Running the App
@@ -369,7 +370,7 @@ open ios/Runner.xcworkspace
 
 ```bash
 # Build optimized web bundle
-flutter build web --release --web-renderer html
+flutter build web --release
 
 # Output: build/web/
 # Deploy to Firebase, Netlify, or any static host
@@ -394,22 +395,23 @@ kidni/
 ├── lib/
 │   ├── main.dart                          # 🚀 App entry, theme config, KidniColors
 │   ├── data/
-│   │   └── questions_data.dart            # 📚 All 20 quiz questions (Hebrew)
+│   │   └── questions_data.dart            # 📚 All 40 quiz questions (Hebrew)
 │   ├── models/
 │   │   └── models.dart                    # 🧠 Question/Option/LevelManager classes
 │   └── screens/
 │       ├── home_screen.dart               # 🏠 Level selection hub
 │       ├── quiz_screen.dart               # 🎯 Quiz gameplay engine
+│       ├── review_screen.dart             # 📖 Per-level answer review
 │       └── triumph_dialog.dart            # 🎊 Victory celebration animation
 │
 ├── assets/
 │   ├── avatars/                           # 🎭 5 claymorphism character PNGs
-│   │   ├── avatar_lvl1.png               # לומד (Beginner)
-│   │   ├── avatar_lvl2.png               # מתקדם (Intermediate)
-│   │   ├── avatar_lvl3.png               # בקיא (Proficient)
-│   │   ├── avatar_lvl4.png               # מנוסה (Experienced)
-│   │   └── avatar_lvl5.png               # מומחה (Expert)
-│   ├── images/                            # 🍎 26 food photography files
+│   │   ├── avatar_lvl1.png               # מתחיל (Beginner)
+│   │   ├── avatar_lvl2.png               # לומד (Learner)
+│   │   ├── avatar_lvl3.png               # מתקדם (Advanced)
+│   │   ├── avatar_lvl4.png               # מומחה (Expert)
+│   │   └── avatar_lvl5.png               # דוקטור (Doctor)
+│   ├── images/                            # 🍎 40 food images (q01–q40)
 │   └── logo/
 │       └── KidniLogo.jpg                  # 🏥 App branding
 │
@@ -494,7 +496,7 @@ await _levelManager.startLevelSession(level);  // Clears session data
 await _levelManager.saveQuestionResult(
   level: level,
   questionId: questionId,
-  wasCorrect: isCorrect
+  isCorrect: isCorrect,
 );
 
 // When completing level
@@ -522,14 +524,14 @@ See [HIGH_SCORE_LOGIC.md](HIGH_SCORE_LOGIC.md) for edge cases and testing scenar
 **Implementation**:
 ```dart
 Image.asset(
-  option.image ?? '',
+  question.image,
   errorBuilder: (context, error, stackTrace) {
     return Container(
-      color: Colors.grey[200],
+      color: Colors.grey.shade100,
       child: Icon(
-        Icons.restaurant,
+        Icons.restaurant_rounded,
         size: 48,
-        color: Colors.grey[400],
+        color: Colors.grey.shade400,
       ),
     );
   },
@@ -581,18 +583,17 @@ Each question follows this validated schema:
   "level": 1,                               // Difficulty tier (1-5)
   "topic": "ארוחת בוקר ובסיס",               // Category in Hebrew
   "question_text": "איזה לחם עדיף...?",     // Question prompt
+  "image": "assets/images/q01_bread.png",   // One scenario image per question
   "options": [
     {
       "id": "A",
-      "text": "לחם מלא או שיפון",            // Option label
-      "is_correct": false,
-      "image": "assets/images/whole_wheat.png"
+      "text": "לחם מלא או שיפון",            // Option label (text only)
+      "is_correct": false
     },
     {
       "id": "B",
       "text": "לחם לבן או פיתה",
-      "is_correct": true,
-      "image": "assets/images/white_bread.png"
+      "is_correct": true
     }
   ],
   "explanation": "לפי המדריך, לחם לבן מכיל פחות זרחן..."  // Medical justification
@@ -617,25 +618,29 @@ Each question follows this validated schema:
 
 1. **Edit** [lib/data/questions_data.dart](lib/data/questions_data.dart)
 2. **Follow** the schema above
-3. **Add** corresponding food images to `assets/images/`
+3. **Add** the question image to `assets/images/` (convention: `qNN_name.png`)
 4. **Update** `pubspec.yaml` if adding new directories
 5. **Test** thoroughly on real device (verify Hebrew rendering)
 
 **Example**:
 ```dart
 {
-  "id": 21,
-  "level": 6,  // If creating a new level
+  "id": 41,
+  "level": 5,  // 1–5 (or add a new level)
   "topic": "נושא חדש",
   "question_text": "שאלה בעברית?",
+  "image": "assets/images/q41_new_food.png",
   "options": [
     {
       "id": "A",
       "text": "תשובה ראשונה",
-      "is_correct": false,
-      "image": "assets/images/new_food.png"
+      "is_correct": false
     },
-    // ... more options
+    {
+      "id": "B",
+      "text": "תשובה שנייה",
+      "is_correct": true
+    }
   ],
   "explanation": "הסבר מפורט עם מקורות רפואיים"
 }
@@ -699,9 +704,9 @@ flutter test
 See [REFINEMENT_NOTES.md](REFINEMENT_NOTES.md) for comprehensive testing scenarios.
 
 **Critical Tests**:
-- [ ] Play Level 1, fail (1/4), replay, pass (4/4) → Score updates
+- [ ] Play Level 1, fail (3/8), replay, pass (8/8) → Score updates
 - [ ] Delete a food image → App shows placeholder, doesn't crash
-- [ ] Complete level with 3/4 → Triumph animation plays smoothly
+- [ ] Complete level with 6/8 → Triumph animation plays smoothly
 - [ ] Airplane mode → App functions normally
 - [ ] Long Hebrew text → No overflow errors
 
@@ -792,8 +797,8 @@ Interested in customizing this app for your department? Have medical content fee
 
 Found a bug? Want to contribute?
 
-🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/kidni/issues)
-💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/kidni/discussions)
+🐛 **Issues**: [GitHub Issues](https://github.com/Mhemd139/Kidni/issues)
+💬 **Discussions**: [GitHub Discussions](https://github.com/Mhemd139/Kidni/discussions)
 
 ---
 
