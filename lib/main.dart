@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'models/models.dart';
+import 'i18n/language.dart';
 
 // ============================================
 // Kidni App Color Palette
@@ -46,7 +47,8 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize LevelManager before app starts
+  // Load saved language (default Hebrew) and level progress before app starts
+  await LanguageController.instance.init();
   await LevelManager().init();
 
   runApp(const KidniApp());
@@ -62,7 +64,10 @@ class KidniApp extends StatelessWidget {
       Theme.of(context).textTheme,
     );
 
-    return MaterialApp(
+    // Rebuild the entire app when the language toggles.
+    return ValueListenableBuilder<AppLang>(
+      valueListenable: LanguageController.instance.lang,
+      builder: (context, lang, _) => MaterialApp(
       title: 'קידני',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -145,7 +150,8 @@ class KidniApp extends StatelessWidget {
           backgroundColor: KidniColors.cardBackground,
         ),
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(),
+      ),
     );
   }
 }

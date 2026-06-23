@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
-import '../data/questions_data.dart';
 import '../main.dart';
+import '../i18n/strings.dart';
 
 class ReviewScreen extends StatelessWidget {
   final int level;
@@ -22,7 +22,7 @@ class ReviewScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: KidniColors.background,
         appBar: AppBar(
-          title: Text('סקירת ${levelTitles[level] ?? 'שלב $level'}'),
+          title: Text(t.reviewTitle(t.levelTitle(level))),
           centerTitle: true,
           backgroundColor: levelColor,
           foregroundColor: Colors.white,
@@ -152,7 +152,7 @@ class ReviewScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'תשובה נכונה',
+                        t.correctAnswer,
                         style: TextStyle(
                           fontSize: 12,
                           color: KidniColors.successDark,

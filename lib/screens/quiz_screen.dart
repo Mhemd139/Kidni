@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/models.dart';
 import '../data/questions_data.dart';
 import '../main.dart';
+import '../i18n/strings.dart';
 import 'triumph_dialog.dart';
 import 'review_screen.dart';
 
@@ -45,18 +46,18 @@ class _QuizScreenState extends State<QuizScreen> {
               Icon(Icons.exit_to_app_rounded,
                   color: KidniColors.primary, size: 26),
               const SizedBox(width: 12),
-              const Text('לצאת מהמשחק?'),
+              Text(t.exitTitle),
             ],
           ),
-          content: const Text(
-            'ההתקדמות בשלב זה לא תישמר.',
-            style: TextStyle(fontSize: 15),
+          content: Text(
+            t.exitBody,
+            style: const TextStyle(fontSize: 15),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: Text(
-                'להמשיך לשחק',
+                t.keepPlaying,
                 style: TextStyle(color: _getLevelColor(widget.level)),
               ),
             ),
@@ -65,7 +66,7 @@ class _QuizScreenState extends State<QuizScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: KidniColors.errorDark,
               ),
-              child: const Text('צא'),
+              child: Text(t.exit),
             ),
           ],
         ),
@@ -232,8 +233,8 @@ class _QuizScreenState extends State<QuizScreen> {
               Expanded(
                 child: Text(
                   passed && isLastLevel
-                      ? 'כל הכבוד! סיימת הכל!'
-                      : 'סיימת את השלב!',
+                      ? t.finishedAll
+                      : t.finishedLevel,
                 ),
               ),
             ],
@@ -242,7 +243,7 @@ class _QuizScreenState extends State<QuizScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'ענית נכון על ${result.sessionScore} מתוך ${_questions.length} שאלות',
+                t.answeredCorrectly(result.sessionScore, _questions.length),
                 style: const TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 8),
@@ -261,7 +262,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       Icon(Icons.star, color: Colors.amber.shade700, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'שיא חדש!',
+                        t.newHighScore,
                         style: TextStyle(
                           color: KidniColors.successDark,
                           fontWeight: FontWeight.bold,
@@ -273,7 +274,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 )
               else if (result.oldHighScore > result.sessionScore)
                 Text(
-                  'השיא שלך: ${result.oldHighScore}/${_questions.length}',
+                  t.yourHighScore(result.oldHighScore, _questions.length),
                   style: TextStyle(
                     fontSize: 14,
                     color: KidniColors.textSecondary,
@@ -301,7 +302,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'השלמת את כל השלבים! אתה מומחה לתזונה נכונה לכליות',
+                          t.masteredAll,
                           style: TextStyle(
                             color: KidniColors.textPrimary,
                             fontSize: 14,
@@ -328,7 +329,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'צריך $pointsToUnlock תשובות נכונות כדי לפתוח את השלב הבא. נסו שוב!',
+                          t.needMoreToUnlock(pointsToUnlock),
                           style: TextStyle(
                             color: KidniColors.textPrimary,
                             fontSize: 14,
@@ -357,7 +358,7 @@ class _QuizScreenState extends State<QuizScreen> {
               icon: Icon(Icons.menu_book_rounded,
                   size: 18, color: _getLevelColor(widget.level)),
               label: Text(
-                'סקור',
+                t.review,
                 style: TextStyle(color: _getLevelColor(widget.level)),
               ),
             ),
@@ -368,7 +369,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 _retryLevel();
               },
               child: Text(
-                passed ? 'שחק שוב' : 'נסה שוב',
+                passed ? t.playAgain : t.tryAgain,
                 style: TextStyle(color: _getLevelColor(widget.level)),
               ),
             ),
@@ -380,7 +381,7 @@ class _QuizScreenState extends State<QuizScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: KidniColors.primary,
               ),
-              child: const Text('תפריט'),
+              child: Text(t.menu),
             ),
           ],
         ),
@@ -409,7 +410,7 @@ class _QuizScreenState extends State<QuizScreen> {
         child: Scaffold(
           backgroundColor: KidniColors.background,
           appBar: AppBar(
-            title: Text(levelTitles[widget.level] ?? 'שלב ${widget.level}'),
+            title: Text(t.levelTitle(widget.level)),
             centerTitle: true,
             backgroundColor: _getLevelColor(widget.level),
             foregroundColor: Colors.white,
@@ -427,8 +428,8 @@ class _QuizScreenState extends State<QuizScreen> {
     // This should never happen now, but keep as safety net
     if (_currentQuestion == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('שאלון')),
-        body: const Center(child: Text('אין שאלות זמינות')),
+        appBar: AppBar(title: Text(t.quizTitle)),
+        body: Center(child: Text(t.noQuestions)),
       );
     }
 
@@ -446,14 +447,14 @@ class _QuizScreenState extends State<QuizScreen> {
         child: Scaffold(
           backgroundColor: KidniColors.background,
           appBar: AppBar(
-            title: Text(levelTitles[widget.level] ?? 'שלב ${widget.level}'),
+            title: Text(t.levelTitle(widget.level)),
             centerTitle: true,
             backgroundColor: _getLevelColor(widget.level),
             foregroundColor: Colors.white,
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_forward_rounded),
-              tooltip: 'חזרה',
+              tooltip: t.back,
               onPressed: () async {
                 final shouldExit = await _confirmExit();
                 if (shouldExit && mounted) {
@@ -501,7 +502,7 @@ class _QuizScreenState extends State<QuizScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'שאלה ${_questionIndex + 1} מתוך ${_questions.length}',
+                t.questionProgress(_questionIndex + 1, _questions.length),
                 style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
               Row(
@@ -530,7 +531,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               color: Colors.white, size: 16),
                           const SizedBox(width: 4),
                           Text(
-                            'רצף $_currentStreak',
+                            t.streak(_currentStreak),
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -562,7 +563,7 @@ class _QuizScreenState extends State<QuizScreen> {
                         );
                       },
                       child: Text(
-                        '$_sessionScore נקודות',
+                        t.points(_sessionScore),
                         key: ValueKey(_sessionScore),
                         style: const TextStyle(
                           color: Colors.white,
@@ -985,7 +986,7 @@ class _ExplanationSheet extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isCorrect ? 'כל הכבוד!' : 'לא נורא!',
+                            isCorrect ? t.correctTitle : t.wrongTitle,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -996,9 +997,7 @@ class _ExplanationSheet extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            isCorrect
-                                ? 'תשובה נכונה! +1 נקודה'
-                                : 'בפעם הבאה יהיה יותר טוב',
+                            isCorrect ? t.correctSub : t.wrongSub,
                             style: TextStyle(
                               fontSize: 15,
                               color: KidniColors.textSecondary,
@@ -1036,7 +1035,7 @@ class _ExplanationSheet extends StatelessWidget {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            'הסבר',
+                            t.explanation,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1071,7 +1070,7 @@ class _ExplanationSheet extends StatelessWidget {
                       size: 22,
                     ),
                     label: Text(
-                      isLastQuestion ? 'סיים שלב' : 'שאלה הבאה',
+                      isLastQuestion ? t.finishLevel : t.nextQuestion,
                       style: const TextStyle(fontSize: 18),
                     ),
                     style: FilledButton.styleFrom(

@@ -1,5 +1,9 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/questions_data.dart';
+import '../data/questions_ar.dart';
+import '../i18n/language.dart';
+
+bool get _isArabic => LanguageController.instance.lang.value == AppLang.ar;
 
 // ============================================
 // Question Model
@@ -7,19 +11,27 @@ import '../data/questions_data.dart';
 
 class Option {
   final String id;
-  final String text;
+  final String textHe;
+  final String? textAr;
   final bool isCorrect;
 
   Option({
     required this.id,
-    required this.text,
+    required this.textHe,
+    required this.textAr,
     required this.isCorrect,
   });
 
-  factory Option.fromJson(Map<String, dynamic> json) {
+  // Resolves to Arabic when selected and available, otherwise Hebrew.
+  String get text => (_isArabic && textAr != null && textAr!.isNotEmpty)
+      ? textAr!
+      : textHe;
+
+  factory Option.fromJson(Map<String, dynamic> json, String? arText) {
     return Option(
       id: json['id'] as String,
-      text: json['text'] as String,
+      textHe: json['text'] as String,
+      textAr: arText,
       isCorrect: json['is_correct'] as bool,
     );
   }
@@ -28,33 +40,56 @@ class Option {
 class Question {
   final int id;
   final int level;
-  final String topic;
-  final String questionText;
+  final String topicHe;
+  final String? topicAr;
+  final String questionTextHe;
+  final String? questionTextAr;
   final String image;
   final List<Option> options;
-  final String explanation;
+  final String explanationHe;
+  final String? explanationAr;
 
   Question({
     required this.id,
     required this.level,
-    required this.topic,
-    required this.questionText,
+    required this.topicHe,
+    required this.topicAr,
+    required this.questionTextHe,
+    required this.questionTextAr,
     required this.image,
     required this.options,
-    required this.explanation,
+    required this.explanationHe,
+    required this.explanationAr,
   });
 
+  String _pick(String he, String? ar) =>
+      (_isArabic && ar != null && ar.isNotEmpty) ? ar : he;
+
+  String get topic => _pick(topicHe, topicAr);
+  String get questionText => _pick(questionTextHe, questionTextAr);
+  String get explanation => _pick(explanationHe, explanationAr);
+
   factory Question.fromJson(Map<String, dynamic> json) {
+    final int id = json['id'] as int;
+    final Map<String, dynamic>? ar = questionsAr[id];
+    final Map<String, dynamic>? arOptions =
+        ar?['options'] as Map<String, dynamic>?;
+
     return Question(
-      id: json['id'] as int,
+      id: id,
       level: json['level'] as int,
-      topic: json['topic'] as String,
-      questionText: json['question_text'] as String,
+      topicHe: json['topic'] as String,
+      topicAr: ar?['topic'] as String?,
+      questionTextHe: json['question_text'] as String,
+      questionTextAr: ar?['question'] as String?,
       image: json['image'] as String,
-      options: (json['options'] as List)
-          .map((o) => Option.fromJson(o as Map<String, dynamic>))
-          .toList(),
-      explanation: json['explanation'] as String,
+      options: (json['options'] as List).map((o) {
+        final opt = o as Map<String, dynamic>;
+        final String optId = opt['id'] as String;
+        return Option.fromJson(opt, arOptions?[optId] as String?);
+      }).toList(),
+      explanationHe: json['explanation'] as String,
+      explanationAr: ar?['explanation'] as String?,
     );
   }
 

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../models/models.dart';
 import '../data/questions_data.dart';
 import '../main.dart';
+import '../i18n/language.dart';
+import '../i18n/strings.dart';
 import 'quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'צריך להשלים שלב ${level - 1} עם לפחות $pointsToUnlock תשובות נכונות כדי לפתוח שלב זה',
+                  t.lockedSnack(level - 1, pointsToUnlock),
                 ),
               ),
             ],
@@ -83,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(Icons.favorite_rounded,
                   color: KidniColors.primary, size: 28),
               const SizedBox(width: 12),
-              const Text('אודות קידני'),
+              Text(t.aboutTitle),
             ],
           ),
           content: Column(
@@ -91,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'קידני — לומדים לאכול נכון',
+                t.aboutHeading,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -100,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'אפליקציה חינוכית לילדים עם מחלת כליות כרונית ולהוריהם. ללמוד ביחד על בחירות מזון נכונות, טכניקות בישול ותוויות מזון.',
+                t.aboutBody,
                 style: TextStyle(
                   fontSize: 14,
                   color: KidniColors.textSecondary,
@@ -125,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'המידע במשחק הוא לצורך למידה בלבד. תמיד התייעצו עם הרופא והדיאטנית של הילד.',
+                        t.aboutDisclaimer,
                         style: TextStyle(
                           fontSize: 12,
                           color: KidniColors.textPrimary,
@@ -141,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('סגור'),
+              child: Text(t.close),
             ),
           ],
         ),
@@ -165,18 +167,18 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(Icons.warning_amber_rounded,
                   color: KidniColors.primary, size: 28),
               const SizedBox(width: 12),
-              const Text('איפוס התקדמות'),
+              Text(t.resetProgress),
             ],
           ),
-          content: const Text(
-            'האם אתה בטוח שברצונך למחוק את כל ההתקדמות ולהתחיל מחדש?',
-            style: TextStyle(fontSize: 16),
+          content: Text(
+            t.resetConfirm,
+            style: const TextStyle(fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: Text(
-                'ביטול',
+                t.cancel,
                 style: TextStyle(color: KidniColors.textSecondary),
               ),
             ),
@@ -185,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: KidniColors.errorDark,
               ),
-              child: const Text('אפס'),
+              child: Text(t.reset),
             ),
           ],
         ),
@@ -198,13 +200,13 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Directionality(
+            content: Directionality(
               textDirection: TextDirection.rtl,
               child: Row(
                 children: [
-                  Icon(Icons.refresh, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('ההתקדמות אופסה בהצלחה'),
+                  const Icon(Icons.refresh, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Text(t.resetDone),
                 ],
               ),
             ),
@@ -229,12 +231,18 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
           actions: [
+            // Language switcher pinned to the top-left corner.
+            const Padding(
+              padding: EdgeInsets.only(left: 4),
+              child: LanguageSwitcher(),
+            ),
+            const Spacer(),
             PopupMenuButton<String>(
               icon: Icon(
                 Icons.more_vert_rounded,
                 color: KidniColors.textSecondary,
               ),
-              tooltip: 'תפריט',
+              tooltip: t.menu,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -256,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(Icons.info_outline_rounded,
                           color: KidniColors.primary, size: 20),
                       const SizedBox(width: 12),
-                      const Text('אודות'),
+                      Text(t.about),
                     ],
                   ),
                 ),
@@ -267,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(Icons.refresh_rounded,
                           color: KidniColors.errorDark, size: 20),
                       const SizedBox(width: 12),
-                      const Text('איפוס התקדמות'),
+                      Text(t.resetProgress),
                     ],
                   ),
                 ),
@@ -315,9 +323,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 KidniColors.primaryDark,
               ],
             ).createShader(bounds),
-            child: const Text(
-              'קידני',
-              style: TextStyle(
+            child: Text(
+              t.appName,
+              style: const TextStyle(
                 fontSize: 42,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -326,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'לומדים לאכול נכון',
+            t.tagline,
             style: TextStyle(
               fontSize: 17,
               color: KidniColors.textSecondary,
@@ -406,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getAvatarTitle(currentLevel),
+                  t.avatarTitle(currentLevel),
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -422,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'שלב $currentLevel מתוך 5',
+                    t.levelOutOf(currentLevel),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -580,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        levelTitles[level] ?? 'שלב $level',
+                        t.levelTitle(level),
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
@@ -592,7 +600,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 6),
                       if (isUnlocked) ...[
                         Text(
-                          '$score/$totalQuestions תשובות נכונות',
+                          t.correctOutOf(score, totalQuestions),
                           style: TextStyle(
                             fontSize: 13,
                             color: KidniColors.textSecondary,
@@ -614,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ] else
                         Text(
-                          'נעול - השלם שלב ${level - 1} כדי לפתוח',
+                          t.lockedHint(level - 1),
                           style: TextStyle(
                             fontSize: 13,
                             color: KidniColors.textLight,
@@ -693,20 +701,70 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  String _getAvatarTitle(int level) {
-    switch (level) {
-      case 1:
-        return 'מתחיל';
-      case 2:
-        return 'לומד';
-      case 3:
-        return 'מתקדם';
-      case 4:
-        return 'מומחה';
-      case 5:
-        return 'דוקטור';
-      default:
-        return 'מתחיל';
-    }
+}
+
+/// Pill-style Hebrew/Arabic language switcher.
+/// Shows both labels; the active one is highlighted. Tapping toggles language.
+class LanguageSwitcher extends StatelessWidget {
+  const LanguageSwitcher({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Listen directly to language changes so the highlight updates instantly.
+    return ValueListenableBuilder<AppLang>(
+      valueListenable: LanguageController.instance.lang,
+      builder: (context, lang, _) {
+        final isArabic = lang == AppLang.ar;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => LanguageController.instance.toggle(),
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border:
+                    Border.all(color: KidniColors.primary.withOpacity(0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _segment('ع', isArabic),
+                  _segment('א', !isArabic),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _segment(String label, bool active) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: active ? KidniColors.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: active ? Colors.white : KidniColors.textSecondary,
+        ),
+      ),
+    );
   }
 }

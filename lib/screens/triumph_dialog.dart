@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../main.dart';
+import '../i18n/strings.dart';
 
 // ============================================
 // Triumph Dialog - Level Complete with Unlock
@@ -65,23 +66,6 @@ class _TriumphDialogState extends State<TriumphDialog>
     super.dispose();
   }
 
-  String _getAvatarTitle(int level) {
-    switch (level) {
-      case 1:
-        return 'מתחיל';
-      case 2:
-        return 'לומד';
-      case 3:
-        return 'מתקדם';
-      case 4:
-        return 'מומחה';
-      case 5:
-        return 'דוקטור';
-      default:
-        return 'מתחיל';
-    }
-  }
-
   IconData _getAvatarIcon(int level) {
     switch (level) {
       case 1:
@@ -140,7 +124,7 @@ class _TriumphDialogState extends State<TriumphDialog>
 
               // Success message
               Text(
-                'כל הכבוד!',
+                t.correctTitle,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -151,7 +135,7 @@ class _TriumphDialogState extends State<TriumphDialog>
               const SizedBox(height: 8),
 
               Text(
-                'ענית נכון על ${widget.score} מתוך ${widget.totalQuestions} שאלות',
+                t.answeredCorrectly(widget.score, widget.totalQuestions),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -243,7 +227,7 @@ class _TriumphDialogState extends State<TriumphDialog>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'פתחת דרגה חדשה!',
+                            t.unlockedRank,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -256,7 +240,7 @@ class _TriumphDialogState extends State<TriumphDialog>
                       const SizedBox(height: 8),
 
                       Text(
-                        _getAvatarTitle(widget.nextLevel),
+                        t.avatarTitle(widget.nextLevel),
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -267,7 +251,7 @@ class _TriumphDialogState extends State<TriumphDialog>
                       const SizedBox(height: 4),
 
                       Text(
-                        'שלב ${widget.nextLevel} נפתח!',
+                        t.levelUnlocked(widget.nextLevel),
                         style: TextStyle(
                           fontSize: 14,
                           color: KidniColors.textSecondary,
@@ -287,9 +271,9 @@ class _TriumphDialogState extends State<TriumphDialog>
                 child: FilledButton.icon(
                   onPressed: widget.onContinue,
                   icon: const Icon(Icons.arrow_back, size: 22),
-                  label: const Text(
-                    'חזרה לתפריט',
-                    style: TextStyle(fontSize: 18),
+                  label: Text(
+                    t.backToMenu,
+                    style: const TextStyle(fontSize: 18),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: widget.nextLevelColor,
