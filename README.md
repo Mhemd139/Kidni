@@ -12,7 +12,7 @@
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.0.1-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.0.2-blue?style=for-the-badge)
 ![Privacy](https://img.shields.io/badge/privacy-first-green?style=for-the-badge)
 ![Offline](https://img.shields.io/badge/offline-ready-orange?style=for-the-badge)
 
@@ -48,6 +48,17 @@ Built with a **Privacy-First architecture**, Kidni requires:
 - ✅ **No onboarding tutorial** - Intuitive design reduces cognitive load
 
 This ensures that stressed parents can access **life-saving nutritional information** anytime, anywhere, without friction.
+
+---
+
+## 📊 Impact & Validation
+
+Kidni has been validated in a real clinical setting, at **Schneider Children's Medical Center of Israel**.
+
+- **📈 28% increase in awareness** — Measured through a pre/post survey of users in the hospital's **Dialysis Department** after they interacted with the app, demonstrating a real, quantifiable improvement in caregivers' dietary awareness.
+- **🏆 Recognized at Schneider's Innovation Center** — Schneider's Innovation Center hosts an event showcasing projects that could benefit the hospital. Among the presentations, **Kidni stood out and drew the most attention from the hospital's committee.**
+
+> These results were gathered in a real-world hospital environment with actual caregivers, reflecting the app's practical value beyond the lab.
 
 ---
 
