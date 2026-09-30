@@ -41,6 +41,10 @@ class KidniColors {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Varela Round ships in assets/google_fonts/; release builds have no
+  // INTERNET permission, so a runtime fetch would silently fall back.
+  GoogleFonts.config.allowRuntimeFetching = false;
+
   // Portrait-only — the layout is designed vertically; avoids stretched landscape on tablets
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

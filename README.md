@@ -6,6 +6,12 @@ A gamified, offline-first app that teaches parents of children on dialysis which
 
 **[Download the Android APK](https://github.com/Mhemd139/Kidni/releases/latest)** · Flutter · works offline · no account, no tracking
 
+<p align="center">
+  <img src="docs/screenshots/home.jpg" alt="Home: five levels from Beginner to Doctor, with the level avatar" width="250">
+  <img src="docs/screenshots/question.jpg" alt="An image-led question with two answers" width="250">
+  <img src="docs/screenshots/feedback.jpg" alt="Instant feedback with the medical reason" width="250">
+</p>
+
 ## Why
 
 Children with chronic kidney disease (CKD) on dialysis have to keep **phosphorus (זרחן)** and **potassium (אשלגן)** low. Parents get the rules as dense pamphlets and food lists, then have to apply them in seconds in a supermarket aisle or a kitchen. Kidni turns the clinical guidelines into quick picture-based choices that parents practice until the right answer is automatic.
