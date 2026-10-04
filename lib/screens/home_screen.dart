@@ -231,9 +231,8 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
           actions: [
-            // Language switcher pinned to the top-left corner.
             const Padding(
-              padding: EdgeInsets.only(left: 4),
+              padding: EdgeInsetsDirectional.only(start: 16),
               child: LanguageSwitcher(),
             ),
             const Spacer(),
