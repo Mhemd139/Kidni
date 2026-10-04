@@ -34,3 +34,7 @@ flutter_launcher_icons:
   image_path: "assets/logo/KidniLogo.jpg"
   adaptive_icon_background: "#FFFDD0"
   adaptive_icon_foreground: "assets/logo/KidniLogo.jpg"
+  web:
+    generate: true
+    background_color: "#FFFDD0"
+    theme_color: "#FF7F50"
