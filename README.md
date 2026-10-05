@@ -4,7 +4,7 @@ A gamified, offline-first app that teaches parents of children on dialysis which
 
 <p align="center"><img src="assets/logo/KidniLogo.jpg" alt="Kidni logo" width="160"></p>
 
-**[Download the Android APK](https://github.com/Mhemd139/Kidni/releases/latest)** · Flutter · works offline · no account, no tracking
+**[Open Kidni in your browser](https://mhemd139.github.io/Kidni/)**: iPhone and Android, nothing to install · [Android APK](https://github.com/Mhemd139/Kidni/releases/latest) (works offline) · no account, no tracking
 
 <p align="center">
   <img src="docs/screenshots/home.jpg" alt="Home: five levels from Beginner to Doctor, with the level avatar" width="250">
@@ -29,7 +29,7 @@ Validated in a real clinical setting at **Schneider Children's Medical Center of
 - **Image-led questions**: each shows an everyday food scenario with two options. The answer turns green or red and explains the medical reason.
 - **Progression**: 6/8 unlocks the next level and a new avatar. Replays never lower a best score ([scoring design](docs/HIGH_SCORE_LOGIC.md)).
 - **Hebrew, with an Arabic translation in review**; full right-to-left layout on phones and tablets.
-- **Private by design**: no login, no analytics, no permission prompts. Progress stays on the device (`shared_preferences`), and "Reset progress" wipes it.
+- **Private by design**: no login, no analytics, no permission prompts. Progress stays on the device (`shared_preferences`; browser storage on the web), and "Reset progress" wipes it. The web version loads its graphics engine and fonts from Google's CDN.
 
 Content is based on the clinical guidelines of Israeli nephrology departments (*The Phosphate Poster*, *The Potassium Guide*).
 
@@ -51,6 +51,7 @@ flutter pub get
 flutter run                  # a device, an emulator, or -d chrome
 flutter analyze && flutter test
 flutter build apk --release --split-per-abi
+flutter build web --release --base-href /Kidni/   # then publish build/web (plus .nojekyll) to the gh-pages branch
 ```
 
 ---
